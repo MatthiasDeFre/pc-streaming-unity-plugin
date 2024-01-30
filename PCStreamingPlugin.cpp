@@ -65,23 +65,31 @@ void listen_work() {
     // TODO: add poll for performance, maybe
     while (keep_working) {
         size_t size = 0;    
+
         if ((size = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr*)&si_other, &slen)) == SOCKET_ERROR)
         {
+
             return;
            // printf("recvfrom() failed with error code : %d", WSAGetLastError());
            // exit(EXIT_FAILURE);
         }
-        struct PacketHeader p_header(&buf, size);
-        auto frame = recv_frames.find(p_header.framenr);
-        if (frame == recv_frames.end()) {
-            auto e = recv_frames.emplace(p_header.framenr, ReceivedFrame(p_header.framelen, p_header.framenr));
-            frame = e.first;
-        }
-        frame->second.insert(buf, p_header.frameoffset, p_header.packetlen, size);
-        if (frame->second.is_complete()) {
-            frame_buffer.insert_frame(frame->second);
-            recv_frames.erase(p_header.framenr);
-           // std::cout << "Frame Complete " << p_header.framenr << " queue size " << frame_buffer.get_buffer_size() << " " << recv_frames.size() << std::endl;
+
+        struct PacketType p_type(&buf, size);
+        // Check if frame=>0 or control=>1
+        if (p_type.type == 0) {
+            // Parse frame packet
+            struct PacketHeader p_header(&buf, size);
+            auto frame = recv_frames.find(p_header.framenr);
+            if (frame == recv_frames.end()) {
+                auto e = recv_frames.emplace(p_header.framenr, ReceivedFrame(p_header.framelen, p_header.framenr));
+                frame = e.first;
+            }
+            frame->second.insert(buf, p_header.frameoffset, p_header.packetlen, size);
+            if (frame->second.is_complete()) {
+                frame_buffer.insert_frame(frame->second);
+                recv_frames.erase(p_header.framenr);
+
+            }
         }
         buf = buf_ori;
     }

@@ -13,7 +13,9 @@
 
 #define END_DECL_DATA(name)                                                     \
     };  
-
+BEGIN_DECL_DATA(PacketType)
+    uint32_t type;
+END_DECL_DATA(PacketType)
 BEGIN_DECL_DATA(PacketHeader)
     uint32_t framenr;
     uint32_t framelen;

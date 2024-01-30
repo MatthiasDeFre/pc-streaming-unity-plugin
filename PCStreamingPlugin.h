@@ -7,7 +7,7 @@
 extern "C"
 {
     DLLExport void set_data(void* d);
-    DLLExport int setup_connection(char* server_str);
+    DLLExport int setup_connection(char* server_str, uint32_t port);
     DLLExport void start_listening();
     DLLExport int next_frame();
     DLLExport void clean_up();
